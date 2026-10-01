@@ -43,6 +43,12 @@ class ConversationService:
             tx.put("conversations", id, row)
         self.repo.atomic(mark)
         try:
+            for request in self.repo.list("chat_requests", {"owner_uid": uid, "conversation_id": id}):
+                # Keep only a tombstone to reject late retries; erase answer/context copies.
+                key = request.pop("id")
+                tombstone = {k: request[k] for k in ("owner_uid", "conversation_id", "fingerprint")}
+                tombstone["status"] = "deleted"
+                self.repo.put("chat_requests", key, tombstone)
             for message in self.repo.list(f"conversations/{id}/messages"):
                 self.repo.delete(f"conversations/{id}/messages", message["id"])
             self.repo.delete("conversations", id)

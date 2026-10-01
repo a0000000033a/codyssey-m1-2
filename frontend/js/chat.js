@@ -16,9 +16,9 @@ export function createChat(ctx){
       ctx.state.pending={symbol:ctx.state.stock.symbol,conversation_id:ctx.state.conversationId,message,request_id:crypto.randomUUID()};}
     if(!ctx.state.pending)return;const ticket=ctx.state.ticket(),body={...ctx.state.pending};ctx.state.busy=true;ctx.setBusy();$('retry-chat').hidden=true;
     try{const result=await ctx.api.request('/api/chat',{method:'POST',body});if(!ctx.state.isCurrent(ticket))return;
-      ctx.state.conversationId=result.conversation_id;ctx.state.pending=null;$('question').value='';
+      ctx.state.conversationId=result.conversation_id;
       const detail=await ctx.api.request(`/api/conversations/${result.conversation_id}`);if(!ctx.state.isCurrent(ticket))return;
-      render(detail.messages,detail.title);ctx.notice('답변과 대화를 저장했습니다.');
+      ctx.state.pending=null;$('question').value='';render(detail.messages,detail.title);ctx.notice('답변과 대화를 저장했습니다.');
     }catch(error){if(ctx.state.isCurrent(ticket)){$('retry-chat').hidden=false;ctx.notice(error.message,true);}return;
     }finally{if(ctx.state.isCurrent(ticket)){ctx.state.busy=false;ctx.setBusy();await ctx.conversations.load();}}
   }

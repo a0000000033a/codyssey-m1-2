@@ -77,20 +77,27 @@ class StockService:
             state = self.repo.get("sync_state", id) or {}
             if not force and is_fresh(state.get("last_success_at")):
                 return dict(state, stale=False)
+            excluded, error_kind = None, "fetch"
             try:
                 end = datetime.now(ZoneInfo("Asia/Seoul")).date()
                 start = end - timedelta(days=365)
                 points, excluded = clean_points(self.provider.history(symbol, start, end))
                 if not points:
+                    error_kind = "validation"
                     raise ValueError("Empty validated data")
                 stamp = now()
                 self.repo.batch_put("market_data", [(f"KR_{symbol}_{p['date']}", dict(p, market="KR", symbol=symbol, source="NAVER", fetched_at=stamp)) for p in points])
-                state = {"last_success_at": stamp, "last_error": None, "excluded_count": excluded, "source": "NAVER", "adjustment": "출처의 가격 조정 여부를 확인하지 못했습니다."}
+                state = {"last_success_at": stamp, "last_error": None, "error_kind": None, "excluded_count": excluded, "source": "NAVER", "adjustment": "출처의 가격 조정 여부를 확인하지 못했습니다."}
                 self.repo.put("sync_state", id, state)
                 return dict(state, stale=False)
             except Exception:
-                if not self.repo.list("market_data", {"symbol": symbol, "market": "KR"}):
-                    raise ApiError(502, "market_unavailable", "시장 데이터를 가져오지 못했습니다. 잠시 후 재시도해주세요.") from None
-                state["last_error"] = "최근 데이터 갱신에 실패했습니다. 저장된 데이터를 표시합니다."
+                state["error_kind"] = error_kind
+                if excluded is not None:
+                    state["excluded_count"] = excluded
+                state["last_error"] = ("수신한 시장 데이터에 유효한 가격이 없습니다. 저장된 데이터를 표시합니다." if error_kind == "validation" else "최근 데이터 조회 또는 저장에 실패했습니다. 저장된 데이터를 표시합니다.")
                 self.repo.put("sync_state", id, state)
+                if not self.repo.list("market_data", {"symbol": symbol, "market": "KR"}):
+                    code = "market_invalid_data" if error_kind == "validation" else "market_unavailable"
+                    message = "수신한 시장 데이터에 유효한 가격이 없습니다." if error_kind == "validation" else "시장 데이터를 가져오지 못했습니다. 잠시 후 재시도해주세요."
+                    raise ApiError(502, code, message) from None
                 return dict(state, stale=True)

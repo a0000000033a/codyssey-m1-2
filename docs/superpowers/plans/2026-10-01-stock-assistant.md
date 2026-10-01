@@ -1,6 +1,6 @@
 # 국내 주식 AI 분석 비서 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 국내 관심 종목의 저장된 시장 데이터와 개인 기록으로 답하고, 한 종목의 여러 대화를 관리하는 개인용 서비스를 완성합니다.
 
@@ -44,11 +44,11 @@
 
 **Interfaces:** `Settings`는 spec의 서버 환경 변수와 `OPENAI_TIMEOUT_SECONDS=45`, `CHAT_LOCK_SECONDS=90`, `CHAT_INPUT_MAX_CHARS=24000`을 읽습니다. `require_owner(credentials) -> str`는 허용 UID를 반환합니다. `create_app(settings, dependencies) -> FastAPI`는 테스트에서 외부 연결을 대체할 수 있게 합니다. `Page[T]`는 `items`, `next_cursor`를, `ApiError`는 `code`, `message`를 정의합니다. 목록 기본 limit=30, 최대=100으로 고정합니다.
 
-- [ ] 인증·CORS 실패 테스트를 작성합니다: 토큰 없음/만료는 401, 다른 UID는 403, 허용 UID는 성공, `/docs`·`/health` 공개, 허용 origin preflight만 성공합니다. 필수 비밀 설정 누락은 안전하게 실패하며 응답·로그에 값이 없습니다.
-- [ ] Python 3.10 이상을 확인하고 `python3 -m venv backend/.venv`로 환경을 만든 뒤 개발 의존성을 설치합니다. `backend/.venv/bin/python -m pytest backend/tests/test_auth.py -q`를 실행해 미구현으로 실패하는지 확인합니다.
-- [ ] 설정, Firebase ID token 검증, 예외 응답, CORS, 공개 health, Swagger Bearer security를 구현합니다. 모듈 import 시 외부 네트워크 호출을 하지 않고 테스트에서는 검증기를 주입합니다. 최신 SDK 공식 문서에 맞춰 호환 버전을 선택·기록합니다.
-- [ ] 같은 명령이 성공하는지 확인하고 `backend/.venv/bin/python -m uvicorn app.main:app --app-dir backend --port 8000`으로 `/health`, `/docs`를 확인합니다. 실제 키 없이 health를 위한 테스트 구성과 배포 구성은 구분합니다.
-- [ ] 변경을 검토하고 `feat: add authenticated FastAPI foundation`으로 커밋합니다.
+- [x] 인증·CORS 실패 테스트를 작성합니다: 토큰 없음/만료는 401, 다른 UID는 403, 허용 UID는 성공, `/docs`·`/health` 공개, 허용 origin preflight만 성공합니다. 필수 비밀 설정 누락은 안전하게 실패하며 응답·로그에 값이 없습니다.
+- [x] Python 3.10 이상을 확인하고 `python3 -m venv backend/.venv`로 환경을 만든 뒤 개발 의존성을 설치합니다. `backend/.venv/bin/python -m pytest backend/tests/test_auth.py -q`를 실행해 미구현으로 실패하는지 확인합니다.
+- [x] 설정, Firebase ID token 검증, 예외 응답, CORS, 공개 health, Swagger Bearer security를 구현합니다. 모듈 import 시 외부 네트워크 호출을 하지 않고 테스트에서는 검증기를 주입합니다. 최신 SDK 공식 문서에 맞춰 호환 버전을 선택·기록합니다.
+- [x] 같은 명령이 성공하는지 확인하고 `backend/.venv/bin/python -m uvicorn app.main:app --app-dir backend --port 8000`으로 `/health`, `/docs`를 확인합니다. 실제 키 없이 health를 위한 테스트 구성과 배포 구성은 구분합니다.
+- [x] 변경을 검토하고 `feat: add authenticated FastAPI foundation`으로 커밋합니다.
 
 ## Task 2: 국내 종목 수집·저장·관심 목록
 
@@ -56,12 +56,12 @@
 
 **Interfaces:** `Stock(market, symbol, name, exchange)`, `MarketPoint(date, close, volume, source, fetched_at)`. `MarketProvider.list_stocks() -> list[Stock]`, `history(symbol, start, end) -> list[MarketPoint]`. `StockService.search(q, cursor, limit) -> Page[Stock]`, `register(uid, symbol) -> WatchItem`, `refresh(symbol, force=False) -> SyncResult`. `FirestoreRepository`는 stocks/watchlist/market_data/sync_state를 담당하며 개인 작업에 uid를 필수로 받습니다.
 
-- [ ] 테스트를 작성합니다: 코스피·코스닥 일반 주식만 검색, 코드 앞자리 0 유지, 중복 등록 시 기존 항목 반환, 24시간 캐시 재사용, 오래된 데이터 재수집, 거래량 0 유지, NaN/무한대/음수 제외, 날짜 중복 제거, 수집 실패 시 기존 데이터 유지.
-- [ ] `backend/.venv/bin/python -m pytest backend/tests/test_stocks.py -q`를 실행해 미구현으로 실패하는지 확인합니다.
-- [ ] FinanceDataReader의 현재 공식 API와 실제 데이터를 확인하고 명시적 출처와 가격 조정 정보를 기록합니다. 일반 주식 분류는 종목 메타데이터로 검증합니다. 데이터 수집이 불가능하면 실패 근거와 대안을 정리해 데이터 공급원 변경을 논의합니다.
-- [ ] 수집·Firestore 저장·검색·등록·삭제·갱신을 구현합니다. 날짜 순으로 upsert하며 batch당 최대 400건으로 나눕니다. cursor는 검색 조건과 연결하고 잘못된 cursor는 400을 반환합니다. 관심 종목 삭제 시 개인 기록·대화는 유지합니다. 종목 목록도 24시간 캐시하며 빈 결과와 조회 실패를 구분합니다.
-- [ ] 테스트 성공을 확인하고 `backend/.venv/bin/python backend/scripts/verify_market.py --symbol 005930`으로 최근 1년의 실제 데이터 100건 이상을 확인합니다. 기간·건수·제외 건수만 출력하며 원본 데이터는 커밋하지 않습니다.
-- [ ] 변경과 검증 결과를 검토하고 `feat: add domestic stock ingestion and watchlist`로 커밋합니다.
+- [x] 테스트를 작성합니다: 코스피·코스닥 일반 주식만 검색, 코드 앞자리 0 유지, 중복 등록 시 기존 항목 반환, 24시간 캐시 재사용, 오래된 데이터 재수집, 거래량 0 유지, NaN/무한대/음수 제외, 날짜 중복 제거, 수집 실패 시 기존 데이터 유지.
+- [x] `backend/.venv/bin/python -m pytest backend/tests/test_stocks.py -q`를 실행해 미구현으로 실패하는지 확인합니다.
+- [x] FinanceDataReader의 현재 공식 API와 실제 데이터를 확인하고 명시적 출처와 가격 조정 정보를 기록합니다. 일반 주식 분류는 종목 메타데이터로 검증합니다. 데이터 수집이 불가능하면 실패 근거와 대안을 정리해 데이터 공급원 변경을 논의합니다.
+- [x] 수집·Firestore 저장·검색·등록·삭제·갱신을 구현합니다. 날짜 순으로 upsert하며 batch당 최대 400건으로 나눕니다. cursor는 검색 조건과 연결하고 잘못된 cursor는 400을 반환합니다. 관심 종목 삭제 시 개인 기록·대화는 유지합니다. 종목 목록도 24시간 캐시하며 빈 결과와 조회 실패를 구분합니다.
+- [x] 테스트 성공을 확인하고 `backend/.venv/bin/python backend/scripts/verify_market.py --symbol 005930`으로 최근 1년의 실제 데이터 100건 이상을 확인합니다. 기간·건수·제외 건수만 출력하며 원본 데이터는 커밋하지 않습니다.
+- [x] 변경과 검증 결과를 검토하고 `feat: add domestic stock ingestion and watchlist`로 커밋합니다.
 
 ## Task 3: 개인 기록 CRUD와 데이터 요약
 
@@ -69,14 +69,14 @@
 
 **Interfaces:** `RecordInput(symbol, date, value, memo)`, `Record`는 id·owner_uid·timestamp를 추가합니다. `DataService.create(uid, payload) -> Record`, `list(uid, symbol, cursor, limit) -> Page[Record]`, `update(uid, id, payload) -> Record`, `delete(uid, id) -> None`. `calculate_summary(points: list[MarketPoint], records: list[Record], sync: SyncResult) -> Summary`는 순수 계산입니다. `SummaryService.get(uid, symbol) -> Summary`는 저장된 데이터를 읽습니다. 응답 키는 `market_data`, `personal_records`, `quality`입니다.
 
-- [ ] CRUD 테스트를 작성합니다: 미래 날짜(Asia/Seoul), 잘못된 코드, 비유한/0/음수 가격, 1,001자 메모는 422, 타인 ID는 404, 같은 날의 복수 기록과 페이지 조회는 성공합니다.
-- [ ] 요약 테스트를 작성합니다: 개인 가격을 시장 평균에 섞지 않습니다. 0건은 통계 null·판단 불가, 39건은 추세 판단 불가, 40건은 최근 20건과 직전 20건 평균을 비교합니다. 변화율 ±1%는 유지, 경계를 초과하면 상승/하락입니다. 100건 미만 경고, 최근 개인 기록 20개, 제외 건수를 확인합니다.
+- [x] CRUD 테스트를 작성합니다: 미래 날짜(Asia/Seoul), 잘못된 코드, 비유한/0/음수 가격, 1,001자 메모는 422, 타인 ID는 404, 같은 날의 복수 기록과 페이지 조회는 성공합니다.
+- [x] 요약 테스트를 작성합니다: 개인 가격을 시장 평균에 섞지 않습니다. 0건은 통계 null·판단 불가, 39건은 추세 판단 불가, 40건은 최근 20건과 직전 20건 평균을 비교합니다. 변화율 ±1%는 유지, 경계를 초과하면 상승/하락입니다. 100건 미만 경고, 최근 개인 기록 20개, 제외 건수를 확인합니다.
 
   대표 테스트 이름과 핵심 assertion: `test_personal_price_is_not_market_price`는 시장 종가 100·200과 개인 가격 999 입력에 대해 `assert result.market_data.average_close == 150`을 요구합니다. `test_trend_boundary_is_stable`은 이전 20개 100, 최근 20개 101인 입력에 대해 `assert result.market_data.trend.direction == "stable"`을 요구합니다. direction 값은 `up/down/stable/insufficient`로 고정하고 화면에서 한국어로 변환합니다.
-- [ ] `backend/.venv/bin/python -m pytest backend/tests/test_data.py backend/tests/test_summary.py -q`로 실패를 확인합니다.
-- [ ] 필수 data 5개 API와 저장·계산을 구현합니다. `/summary`는 `/{id}`보다 먼저 등록합니다. 요약 조회는 stock service의 캐시 규칙으로 데이터를 확보하며, 동시 갱신은 중복을 방지합니다. 잘못된 cursor는 400을 반환합니다.
-- [ ] 테스트 성공과 Swagger의 5개 API 및 응답 모델을 확인합니다.
-- [ ] `feat: add personal records and stock summaries`로 커밋합니다.
+- [x] `backend/.venv/bin/python -m pytest backend/tests/test_data.py backend/tests/test_summary.py -q`로 실패를 확인합니다.
+- [x] 필수 data 5개 API와 저장·계산을 구현합니다. `/summary`는 `/{id}`보다 먼저 등록합니다. 요약 조회는 stock service의 캐시 규칙으로 데이터를 확보하며, 동시 갱신은 중복을 방지합니다. 잘못된 cursor는 400을 반환합니다.
+- [x] 테스트 성공과 Swagger의 5개 API 및 응답 모델을 확인합니다.
+- [x] `feat: add personal records and stock summaries`로 커밋합니다.
 
 ## Task 4: 종목별 복수 대화와 복원·삭제
 
@@ -84,14 +84,14 @@
 
 **Interfaces:** `Message(role, content, turn_id, sequence, created_at, context_snapshot)`. `ConversationService.create(uid, symbol, messages) -> ConversationDetail`, `list(uid, symbol, cursor, limit) -> Page[ConversationMeta]`, `get(uid, id) -> ConversationDetail`, `delete(uid, id) -> None`. detail의 messages는 sequence 순서로 모두 반환하며 meta에는 본문을 포함하지 않습니다.
 
-- [ ] 같은 종목의 대화 2개가 다른 ID로 생성되고 각각의 메시지가 독립적으로 복원되는 테스트를 작성합니다. 타인 ID는 404, role=system과 101개 메시지/8,001자 본문은 422입니다.
+- [x] 같은 종목의 대화 2개가 다른 ID로 생성되고 각각의 메시지가 독립적으로 복원되는 테스트를 작성합니다. 타인 ID는 404, role=system과 101개 메시지/8,001자 본문은 422입니다.
 
   `test_two_conversations_for_same_symbol`의 핵심 assertion은 `assert first.id != second.id`와 `assert service.get(uid, first.id).messages[0].content == "첫 대화 질문"`입니다. 두 번째 대화에는 다른 본문을 저장해 서로의 내용을 복원하지 않는지 확인합니다.
-- [ ] 삭제 테스트에 하위 메시지 삭제, 중간 실패 후 재시도, 삭제 중 채팅 거부, 관심 목록 제거 후 대화 보존을 추가합니다.
-- [ ] `backend/.venv/bin/python -m pytest backend/tests/test_conversations.py -q`로 실패를 확인합니다.
-- [ ] 필수 4개 API를 구현합니다. 빈 대화 저장을 허용하며 수동 저장은 부모와 최대 100개 메시지를 같은 batch로 만듭니다. 제목은 첫 질문 최대 40자이며 빈 대화는 `새 대화`입니다. 삭제 시 status=deleting을 기록하고 하위 메시지를 나눠 삭제한 뒤 부모를 삭제합니다.
-- [ ] 테스트 성공과 목록에 본문이 포함되지 않는 것을 확인합니다.
-- [ ] `feat: support multiple conversations per stock`로 커밋합니다.
+- [x] 삭제 테스트에 하위 메시지 삭제, 중간 실패 후 재시도, 삭제 중 채팅 거부, 관심 목록 제거 후 대화 보존을 추가합니다.
+- [x] `backend/.venv/bin/python -m pytest backend/tests/test_conversations.py -q`로 실패를 확인합니다.
+- [x] 필수 4개 API를 구현합니다. 빈 대화 저장을 허용하며 수동 저장은 부모와 최대 100개 메시지를 같은 batch로 만듭니다. 제목은 첫 질문 최대 40자이며 빈 대화는 `새 대화`입니다. 삭제 시 status=deleting을 기록하고 하위 메시지를 나눠 삭제한 뒤 부모를 삭제합니다.
+- [x] 테스트 성공과 목록에 본문이 포함되지 않는 것을 확인합니다.
+- [x] `feat: support multiple conversations per stock`로 커밋합니다.
 
 ## Task 5: 컨텍스트 기반 AI와 자동 저장
 
@@ -99,14 +99,14 @@
 
 **Interfaces:** `ChatInput(symbol, message, conversation_id: str | None, request_id: UUID)`, `ChatResult(conversation_id, user_message, assistant_message, context)`. `build_context(summary: Summary, messages: list[Message], input_max_chars: int) -> ModelInput`, `AIProvider.answer(context: ModelInput) -> str`, `ChatService.send(uid, payload) -> ChatResult`. repository는 `acquire_turn(uid, payload, lease_seconds) -> TurnClaim`, `commit_turn(claim, user_message, assistant_message, context) -> ChatResult`를 제공합니다. 요청 ID의 고유 키는 uid를 포함하고, 대화 ID 없는 재시도도 최초 생성 대화에 연결합니다.
 
-- [ ] 컨텍스트 테스트를 작성합니다: 선택 종목·기간·기준일·표본 부족 안내, 최근 메시지 12개와 개인 기록 20개를 전달합니다. 메모 속 지시를 system 지침에 합치지 않고 데이터로 처리합니다. 입력 24,000자를 넘지 않도록 오래된 메시지와 긴 메모부터 줄이고 생략 여부를 기록합니다.
-- [ ] 채팅 테스트를 작성합니다: 종목 불일치 400, 타인 ID 404, 동시 질문 409, 성공 요청 재시도 시 AI 호출 총 1회, 다른 본문으로 같은 ID 사용 시 409, 만료 잠금 복구, 모델 timeout, 저장 실패, 삭제 중 거부. 대화 ID 없는 최초 질문도 같은 request ID 재시도에서 중복 대화·메시지를 만들지 않습니다.
+- [x] 컨텍스트 테스트를 작성합니다: 선택 종목·기간·기준일·표본 부족 안내, 최근 메시지 12개와 개인 기록 20개를 전달합니다. 메모 속 지시를 system 지침에 합치지 않고 데이터로 처리합니다. 입력 24,000자를 넘지 않도록 오래된 메시지와 긴 메모부터 줄이고 생략 여부를 기록합니다.
+- [x] 채팅 테스트를 작성합니다: 종목 불일치 400, 타인 ID 404, 동시 질문 409, 성공 요청 재시도 시 AI 호출 총 1회, 다른 본문으로 같은 ID 사용 시 409, 만료 잠금 복구, 모델 timeout, 저장 실패, 삭제 중 거부. 대화 ID 없는 최초 질문도 같은 request ID 재시도에서 중복 대화·메시지를 만들지 않습니다.
 
   `test_successful_retry_does_not_call_model_twice`는 같은 payload를 2회 보내 `assert first.conversation_id == retry.conversation_id`, `assert ai.calls == 1`, `assert len(conversations.get(uid, first.conversation_id).messages) == 2`를 요구합니다.
-- [ ] `backend/.venv/bin/python -m pytest backend/tests/test_context.py backend/tests/test_chat.py -q`로 실패를 확인합니다.
-- [ ] 최신 OpenAI 공식 SDK 문서에 맞춰 어댑터를 구현합니다. 출력 기본 상한 800토큰, 호출 timeout 45초, SDK 자동 재시도 0회, 잠금 90초입니다. 모델 호출은 트랜잭션 밖에서 수행하고 저장 시 잠금 소유자와 대화 status를 재확인해 사용자/AI 메시지와 요약을 원자적으로 저장합니다. 호출 실패는 잠금을 풀고, 저장 결과 불명확 시 요청 ID의 기존 결과를 조회합니다.
-- [ ] 테스트 성공과 Swagger의 POST `/api/chat`을 확인합니다. 실제 GPT 호출은 Task 7에서 제한적으로 수행합니다.
-- [ ] `feat: add contextual AI chat with durable turn storage`로 커밋합니다.
+- [x] `backend/.venv/bin/python -m pytest backend/tests/test_context.py backend/tests/test_chat.py -q`로 실패를 확인합니다.
+- [x] 최신 OpenAI 공식 SDK 문서에 맞춰 어댑터를 구현합니다. 출력 기본 상한 800토큰, 호출 timeout 45초, SDK 자동 재시도 0회, 잠금 90초입니다. 모델 호출은 트랜잭션 밖에서 수행하고 저장 시 잠금 소유자와 대화 status를 재확인해 사용자/AI 메시지와 요약을 원자적으로 저장합니다. 호출 실패는 잠금을 풀고, 저장 결과 불명확 시 요청 ID의 기존 결과를 조회합니다.
+- [x] 테스트 성공과 Swagger의 POST `/api/chat`을 확인합니다. 실제 GPT 호출은 Task 7에서 제한적으로 수행합니다.
+- [x] `feat: add contextual AI chat with durable turn storage`로 커밋합니다.
 
 ## Task 6: 바닐라 프론트 사용자 흐름
 
@@ -114,11 +114,11 @@
 
 **Interfaces:** `auth.getIdToken()`, `api.request(path, {method, body, signal})`, `state.selectStock(stock)`. 상태는 selectedSymbol/conversationId/generation/busy/nextCursor를 관리하며 응답 표시 전에 generation을 확인합니다. 빌드 스크립트는 공개 설정 4개만 JSON으로 안전하게 직렬화하여 config.js에 기록합니다. Firebase 브라우저 SDK는 공식 ES module의 고정 버전을 사용하며 UI 프레임워크는 추가하지 않습니다.
 
-- [ ] api/state/config 테스트를 먼저 작성합니다: 종목 전환 후 늦은 응답 폐기, 만료 토큰 1회 갱신, POST timeout 자동 재전송 없음, config에 서버 비밀 없음. `node --test frontend/tests/*.test.mjs`로 실패를 확인합니다.
-- [ ] 로그인, 종목 검색·등록·선택, 요약, 개인 기록 CRUD, 복수 대화 목록·생성·복원·삭제, 채팅과 로딩을 구현합니다. 모든 목록에 `더 보기`를 연결하고 사용자 문자열은 textContent로 표시합니다. 대화 복원 시 종목도 복원합니다. 입력 라벨·키보드 사용·작은 화면 배치를 제공합니다.
-- [ ] health 연결 timeout 60초, 일반 GET 30초, chat 90초를 적용하고 콜드스타트 안내와 재시도를 표시합니다. 채팅 재시도는 같은 request ID를 사용합니다. 로그아웃 시 화면의 개인 데이터와 요청 상태를 초기화합니다.
-- [ ] node 테스트 성공 후 브라우저에서 HTML 메모의 텍스트 표시, 종목 전환 중 늦은 응답, 같은 종목의 두 대화 독립, 기록 추가→수정→삭제, 재로그인 복원을 검증합니다. 일반 화면과 작은 화면 스크린샷을 확인합니다.
-- [ ] `feat: add vanilla stock assistant interface`로 커밋합니다.
+- [x] api/state/config 테스트를 먼저 작성합니다: 종목 전환 후 늦은 응답 폐기, 만료 토큰 1회 갱신, POST timeout 자동 재전송 없음, config에 서버 비밀 없음. `node --test frontend/tests/*.test.mjs`로 실패를 확인합니다.
+- [x] 로그인, 종목 검색·등록·선택, 요약, 개인 기록 CRUD, 복수 대화 목록·생성·복원·삭제, 채팅과 로딩을 구현합니다. 모든 목록에 `더 보기`를 연결하고 사용자 문자열은 textContent로 표시합니다. 대화 복원 시 종목도 복원합니다. 입력 라벨·키보드 사용·작은 화면 배치를 제공합니다.
+- [x] health 연결 timeout 60초, 일반 GET 30초, chat 90초를 적용하고 콜드스타트 안내와 재시도를 표시합니다. 채팅 재시도는 같은 request ID를 사용합니다. 로그아웃 시 화면의 개인 데이터와 요청 상태를 초기화합니다.
+- [x] node 테스트 성공 후 브라우저에서 HTML 메모의 텍스트 표시, 종목 전환 중 늦은 응답, 같은 종목의 두 대화 독립, 기록 추가→수정→삭제, 재로그인 복원을 검증합니다. 일반 화면과 작은 화면 스크린샷을 확인합니다.
+- [x] `feat: add vanilla stock assistant interface`로 커밋합니다.
 
 ## Task 7: 실제 서비스 연결과 배포 설정
 

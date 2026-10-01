@@ -34,6 +34,20 @@ try{
   await page.locator('.conversation-open').filter({hasText:'첫 번째 대화 질문'}).click();
   await page.waitForFunction(()=>document.querySelector('.message.user .message-body')?.textContent==='첫 번째 대화 질문');
   assert.equal(await page.locator('.message.user').count(),1);
+  const meta=await page.request.get('http://127.0.0.1:8001/api/conversations?symbol=005930',{headers:{Authorization:'Bearer browser-test'}});
+  const firstId=(await meta.json()).items.find(c=>c.title==='첫 번째 대화 질문').id;
+  let release;const delayed=new Promise(resolve=>{release=resolve;});
+  await page.route(`**/api/conversations/${firstId}`,async route=>{await delayed;await route.continue();});
+  await page.locator('.conversation-open').filter({hasText:'첫 번째 대화 질문'}).click();
+  await page.locator('.conversation-open').filter({hasText:'두 번째 대화 질문'}).click();
+  await page.waitForFunction(()=>document.querySelector('.message.user .message-body')?.textContent==='두 번째 대화 질문');
+  const responseFinished=page.waitForResponse(r=>r.url().endsWith('/api/conversations/'+firstId));
+  release();const older=await responseFinished;await older.finished();
+  await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,100)));
+  assert.equal(await page.locator('.message.user .message-body').textContent(),'두 번째 대화 질문');
+  await page.unroute(`**/api/conversations/${firstId}`);
+  await page.locator('.conversation-open').filter({hasText:'첫 번째 대화 질문'}).click();
+  await page.waitForFunction(()=>document.querySelector('.message.user .message-body')?.textContent==='첫 번째 대화 질문');
   await page.evaluate(()=>{const note=document.createElement('div');note.textContent='개발 검증 화면 · 인증/저장소/GPT는 테스트 대체 객체를 사용합니다.';note.style.cssText='background:#ffe8bc;padding:8px;text-align:center;font-size:12px';document.body.prepend(note);});
   await mkdir('docs/screenshots/development',{recursive:true});
   await page.screenshot({path:'docs/screenshots/development/chat.png',fullPage:true});
@@ -43,6 +57,30 @@ try{
   await page.setViewportSize({width:390,height:844});await page.click('#tab-chat');
   await page.screenshot({path:'docs/screenshots/development/mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+  let failDetail=true;const chatRequests=[];
+  await page.route('**/api/chat',async route=>{chatRequests.push(route.request().postDataJSON());await route.continue();});
+  await page.route(`**/api/conversations/${firstId}`,async route=>{
+    if(route.request().method()==='GET'&&failDetail){failDetail=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'시험용 상세 조회 실패'})});}
+    else await route.continue();
+  });
+  await page.fill('#question','조회 실패 후 재시도 질문');await page.click('#send');
+  await page.waitForSelector('#retry-chat:visible');await page.click('#retry-chat');
+  await page.waitForFunction(()=>document.querySelectorAll('.message.user').length===2,{},{timeout:5000});
+  assert.equal(chatRequests.length,2);assert.equal(chatRequests[0].request_id,chatRequests[1].request_id);
+  assert.equal(await page.locator('.message.assistant').count(),2);
+  await page.unroute(`**/api/conversations/${firstId}`);await page.unroute('**/api/chat');
+  let releaseDeleted;const heldDeleted=new Promise(resolve=>{releaseDeleted=resolve;});
+  let captured;const capturedResponse=new Promise(resolve=>{captured=resolve;});
+  await page.route(`**/api/conversations/${firstId}`,async route=>{
+    if(route.request().method()!=='GET'){await route.continue();return;}
+    const response=await route.fetch();captured();await heldDeleted;await route.fulfill({response});
+  });
+  await page.locator('.conversation-open').filter({hasText:'첫 번째 대화 질문'}).click();await capturedResponse;
+  page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'첫 번째 대화 질문 대화 삭제',exact:true}).click();
+  await page.waitForFunction(()=>!Array.from(document.querySelectorAll('.conversation-open')).some(e=>e.textContent.includes('첫 번째 대화 질문')));
+  const deletedFinished=page.waitForResponse(r=>r.url().endsWith('/api/conversations/'+firstId)&&r.request().method()==='GET');
+  releaseDeleted();await (await deletedFinished).finished();await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,100)));
+  assert.equal(await page.locator('.message.user').count(),0);
   await page.click('#logout');await page.waitForSelector('#login-panel:visible');
   assert.deepEqual(errors,[]);console.log('PASS browser: login, stock, record CRUD/XSS, two conversations, restore, mobile, logout (test-only external adapters).');
 }finally{await browser.close();}

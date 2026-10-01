@@ -78,3 +78,17 @@ def test_delete_during_model_call_cannot_recreate_conversation(api):
     assert client.post("/api/chat", json=payload(conversation_id=id)).status_code == 404
     assert services.repo.get("conversations", id) is None
     assert services.repo.list(f"conversations/{id}/messages") == []
+
+
+def test_deleted_conversation_removes_replay_content_without_recreating(api):
+    client, services = api
+    body = payload()
+    result = client.post("/api/chat", json=body)
+    id = result.json()["conversation_id"]
+    assert client.delete(f"/api/conversations/{id}").status_code == 204
+    requests = services.repo.list("chat_requests", {"conversation_id": id})
+    assert len(requests) == 1
+    assert "result" not in requests[0]
+    assert requests[0]["status"] == "deleted"
+    assert client.post("/api/chat", json=body).status_code == 404
+    assert services.ai.calls == 1

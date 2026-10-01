@@ -74,3 +74,21 @@ def test_naver_euc_kr_xml_can_be_read(monkeypatch):
     monkeypatch.setattr(httpx, "get", lambda *a, **k: httpx.Response(200, content=body.encode("euc-kr"), request=httpx.Request("GET", "https://test")))
     points = MarketProvider().history("005930", date(2026, 9, 1), date(2026, 9, 1))
     assert points[0]["close"] == "100"
+
+
+def test_invalid_refresh_retains_quality_reason_and_exclusion_count():
+    from app.core.errors import ApiError
+    service, repo, provider = stock_service()
+    provider.history = lambda *args: [{"date": "2026-09-01", "close": float("nan"), "volume": 1}]
+    with pytest.raises(ApiError) as failure:
+        service.refresh("005930")
+    assert failure.value.code == "market_invalid_data"
+    state = repo.get("sync_state", "KR_005930")
+    assert state["error_kind"] == "validation"
+    assert state["excluded_count"] == 1
+    repo.put("market_data", "saved", {"symbol": "005930", "market": "KR", "date": "2026-09-01", "close": 100, "volume": 0})
+    result = service.refresh("005930")
+    assert result["stale"] is True
+    assert result["error_kind"] == "validation"
+    assert result["excluded_count"] == 1
+    assert repo.get("market_data", "saved")["close"] == 100

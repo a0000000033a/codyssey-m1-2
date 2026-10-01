@@ -24,7 +24,7 @@ def calculate_summary(points, records, sync):
     recent_records = sorted(records, key=lambda x: (x["date"], x.get("created_at", "")), reverse=True)[:20]
     return {"market_data": market, "personal_records": {"count": len(records), "recent": [{k: r[k] for k in ("date", "value", "memo")} for r in recent_records]},
             "quality": {"insufficient_sample": len(prices) < 100, "stale": bool(sync.get("last_error")),
-                        "message": sync.get("last_error"), "source": sync.get("source", "NAVER"),
+                        "message": sync.get("last_error"), "error_kind": sync.get("error_kind"), "source": sync.get("source", "NAVER"),
                         "fetched_at": sync.get("last_success_at"), "excluded_count": sync.get("excluded_count", 0),
                         "adjustment": sync.get("adjustment", "가격 조정 여부를 확인하지 못했습니다.")}}
 

@@ -14,3 +14,12 @@ test('build emits only public settings and safely escapes values', async () => {
     assert.equal(config.firebase.apiKey,'public"key');assert.equal(config.apiBaseUrl,'https://api.test');
   } finally {await rm(dir,{recursive:true,force:true});}
 });
+
+test('static build excludes environment and test sources', async () => {
+  const {readdir}=await import('node:fs/promises');
+  execFileSync(process.execPath,['frontend/scripts/build-site.mjs']);
+  const files=await readdir('frontend/dist');
+  assert.deepEqual(files.sort(),['config.js','index.html','js','styles.css']);
+  const source=await readFile('frontend/dist/js/app.js','utf8');
+  assert.ok(source.includes('createAuth'));
+});
