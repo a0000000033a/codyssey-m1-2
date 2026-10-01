@@ -27,3 +27,23 @@ class FirestoreRepository:
             for id, row in rows[offset:offset+400]:
                 batch.set(self.client.collection(collection).document(id), row)
             batch.commit()
+
+    def atomic(self, callback):
+        from google.cloud import firestore
+        client = self.client
+        class TransactionView:
+            def get(self, collection, id):
+                snapshot = client.collection(collection).document(id).get(transaction=transaction)
+                return snapshot.to_dict() if snapshot.exists else None
+
+            def put(self, collection, id, value):
+                transaction.set(client.collection(collection).document(id), value)
+
+            def delete(self, collection, id):
+                transaction.delete(client.collection(collection).document(id))
+
+        transaction = client.transaction()
+        @firestore.transactional
+        def run(transaction):
+            return callback(TransactionView())
+        return run(transaction)

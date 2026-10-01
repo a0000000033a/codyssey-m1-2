@@ -24,6 +24,15 @@ class MemoryRepository:
         for id, row in rows:
             self.put(collection, id, row)
 
+    def atomic(self, callback):
+        with self.lock:
+            before = deepcopy(self.documents)
+            try:
+                return callback(self)
+            except Exception:
+                self.documents = before
+                raise
+
 
 class FakeMarket:
     def __init__(self):

@@ -11,9 +11,10 @@ def api():
     from app.services.stocks import StockService
     from app.services.data import DataService
     from app.services.summary import SummaryService
+    from app.services.conversations import ConversationService
     repo = MemoryRepository()
     stocks = StockService(repo, FakeMarket())
-    services = SimpleNamespace(repo=repo, stocks=stocks, data=DataService(repo, stocks), summary=SummaryService(repo, stocks))
+    services = SimpleNamespace(repo=repo, stocks=stocks, data=DataService(repo, stocks), summary=SummaryService(repo, stocks), conversations=ConversationService(repo, stocks))
     settings = Settings(allowed_user_uid="owner")
     app = create_app(settings, services, lambda token: {"uid": token})
     client = TestClient(app)
