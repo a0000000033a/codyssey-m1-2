@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    {"collectionGroup":"data","queryScope":"COLLECTION","fields":[{"fieldPath":"owner_uid","order":"ASCENDING"},{"fieldPath":"symbol","order":"ASCENDING"}]},
+    {"collectionGroup":"conversations","queryScope":"COLLECTION","fields":[{"fieldPath":"owner_uid","order":"ASCENDING"},{"fieldPath":"symbol","order":"ASCENDING"}]},
+    {"collectionGroup":"market_data","queryScope":"COLLECTION","fields":[{"fieldPath":"market","order":"ASCENDING"},{"fieldPath":"symbol","order":"ASCENDING"}]}
+  ],
+  "fieldOverrides": [
+    {"collectionGroup":"messages","fieldPath":"context_snapshot","indexes":[]},
+    {"collectionGroup":"chat_requests","fieldPath":"result","indexes":[]}
+  ]
+}

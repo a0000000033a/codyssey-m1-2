@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: codyssey-m1-2-api
+    runtime: python
+    plan: free
+    branch: codex/stock-assistant
+    rootDir: backend
+    buildCommand: pip install -r requirements-lock.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.14
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        sync: false
+      - key: OPENAI_MAX_OUTPUT_TOKENS
+        value: "800"
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: ALLOWED_USER_UID
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
