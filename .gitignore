@@ -1,0 +1,43 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
+credentials.json
+secrets/
+*.pem
+*.key
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Frontend generated files
+node_modules/
+dist/
+.vercel/
+frontend/config.js
+
+# Personal runtime data
+data/
+cache/
+logs/
+*.log
+
+# Local tools and OS files
+.DS_Store
+.worktrees/
+.agents/
+.codex/
+.idea/
+.vscode/
