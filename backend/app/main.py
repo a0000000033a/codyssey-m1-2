@@ -26,6 +26,8 @@ def create_app(settings: Settings | None = None, dependencies=None, token_verifi
 
     from .routers.stocks import router as stocks_router
     app.include_router(stocks_router)
+    from .routers.data import router as data_router
+    app.include_router(data_router)
     return app
 
 

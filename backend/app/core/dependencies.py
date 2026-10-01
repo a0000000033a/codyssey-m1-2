@@ -16,9 +16,12 @@ def get_services(request: Request):
             from ..repositories.firestore import FirestoreRepository
             from ..providers.market import MarketProvider
             from ..services.stocks import StockService
+            from ..services.data import DataService
+            from ..services.summary import SummaryService
             try:
                 repo = FirestoreRepository(firestore.client(app=firebase_app(request.app.state.settings)))
-                request.app.state.dependencies = SimpleNamespace(repo=repo, stocks=StockService(repo, MarketProvider()))
+                stocks = StockService(repo, MarketProvider())
+                request.app.state.dependencies = SimpleNamespace(repo=repo, stocks=stocks, data=DataService(repo, stocks), summary=SummaryService(repo, stocks))
             except ApiError:
                 raise
             except Exception:
