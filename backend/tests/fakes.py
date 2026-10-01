@@ -47,3 +47,16 @@ class FakeMarket:
         if self.fail:
             raise RuntimeError("provider unavailable")
         return [{"date": "2026-09-28", "close": 100, "volume": 0}, {"date": "2026-09-29", "close": 200, "volume": 10}]
+
+
+class FakeAI:
+    def __init__(self):
+        self.calls, self.fail, self.on_answer = 0, False, None
+
+    def answer(self, context):
+        self.calls += 1
+        if self.fail:
+            raise TimeoutError()
+        if self.on_answer:
+            self.on_answer()
+        return "저장된 데이터의 평균 종가는 150원입니다. 표본이 부족합니다."
