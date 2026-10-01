@@ -24,6 +24,8 @@ def create_app(settings: Settings | None = None, dependencies=None, token_verifi
     def me(uid: str = Depends(require_owner)):
         return {"authenticated": True}
 
+    from .routers.stocks import router as stocks_router
+    app.include_router(stocks_router)
     return app
 
 
