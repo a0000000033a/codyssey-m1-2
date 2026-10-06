@@ -49,3 +49,5 @@ Admin SDK의 본인 사용자 조회, Firestore 읽기, 실제 TurnStore 트랜�
 Render 무료 Web Service를 싱가포르 지역에 배포했습니다. 실제 API 주소는 `https://codyssey-m1-2-api.onrender.com`입니다. `/health`와 `/docs`는 200, 비로그인 `/api/me`는 401로 응답했습니다.
 
 Vercel Hobby 프로젝트는 GitHub 저장소에 연결하고 운영 브랜치를 `codex/stock-assistant`로 설정했습니다. 커밋 `8c1967c`의 운영 배포가 Ready 상태이며 `https://project-6ablk.vercel.app`에서 실제 로그인 화면과 Firebase 로그인 준비 상태를 확인했습니다. 프론트에는 API 주소와 Firebase 웹 공개 설정 4개만 저장했습니다. 로그인 화면 캡처는 `screenshots/deployment/login.jpg`이며 로그인 후 필수 기능 증빙을 대신하지 않습니다.
+
+Render CORS는 운영 origin `https://project-6ablk.vercel.app`의 Authorization 헤더를 포함한 preflight 요청을 200으로 허용합니다. 미등록 `https://example.com` origin은 400이며 허용 origin 헤더가 없습니다. 비밀 키는 운영 환경에서 교체가 필요하며, 사용자 로그인 이후 전체 기능 확인은 별도 진행합니다.
