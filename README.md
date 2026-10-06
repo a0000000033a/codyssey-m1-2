@@ -2,7 +2,7 @@
 
 국내 관심 종목의 과거 주가·거래량과 내가 남긴 관심 가격·메모를 함께 이해하는 개인용 웹 서비스입니다. 여러 종목을 등록하고 한 종목씩 분석하며, 같은 종목에 여러 대화를 만들 수 있습니다.
 
-현재 상태: 로컬 기능 구현과 자동 검증을 마쳤으며 실제 Firebase 로그인·Firestore 저장·코디세이 AI 연결을 설정했습니다. 개발용 대체 객체는 테스트에서만 사용합니다. Render 배포 후 health·Swagger 응답과 비로그인 접근 차단을 확인했습니다. 실제 전체 통합 검증은 Firestore의 `429 Quota exceeded` 응답으로 중단했으며, Vercel 배포와 배포 환경의 전체 기능 검증은 대기 중입니다.
+현재 상태: 로컬 기능 구현과 자동 검증을 마쳤으며 실제 Firebase 로그인·Firestore 저장·코디세이 AI 연결을 설정했습니다. 개발용 대체 객체는 테스트에서만 사용합니다. Render health·Swagger 응답과 비로그인 접근 차단, Vercel 운영 배포와 실제 로그인 화면 표시를 확인했습니다. 실제 전체 통합 검증은 Firestore의 `429 Quota exceeded` 응답으로 중단했으며, 배포 환경의 전체 기능 검증은 대기 중입니다.
 
 ## 기능과 기술
 
@@ -28,11 +28,11 @@
 
 | 서비스 | 상태 |
 | --- | --- |
-| Vercel 프론트 | 계정·환경 설정 및 실제 배포 대기 |
+| Vercel 프론트 | https://project-6ablk.vercel.app |
 | Render API | https://codyssey-m1-2-api.onrender.com |
 | Swagger | https://codyssey-m1-2-api.onrender.com/docs |
 
-실제 배포·접근 확인 후 주소를 기록합니다. [설정·배포 안내](docs/deployment.md)를 따라 계정과 키를 준비합니다.
+운영 배포 브랜치는 `codex/stock-assistant`입니다. [설정·배포 안내](docs/deployment.md)를 따라 계정과 키를 준비합니다.
 
 ## 로컬 실행
 
@@ -136,6 +136,10 @@ backend/.venv/bin/python backend/scripts/verify_market.py --symbol 005930
 ![개발 검증: 개인 기록 관리](docs/screenshots/development/records.png)
 
 최종 제출용 요약+질문/답변, CRUD 동작, 대화 복원 스크린샷은 실제 연결·배포 후 추가합니다. 다른 시장과 선택 보너스 기능은 첫 버전 범위에서 제외합니다.
+
+실제 Vercel 운영 배포의 로그인 화면입니다. 로그인 이후 전체 기능 증빙은 별도로 확인합니다.
+
+![운영 배포 로그인 화면](docs/screenshots/deployment/login.jpg)
 
 - [설계](docs/superpowers/specs/2026-10-01-stock-assistant-design.md)
 - [구현 계획](docs/superpowers/plans/2026-10-01-stock-assistant.md)

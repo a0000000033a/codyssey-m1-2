@@ -1,6 +1,6 @@
 # 실제 연결 및 배포 설정
 
-현재 구현은 준비되어 있지만 개인 계정·키 설정과 실제 Firestore/GPT 연결·배포 검증은 대기 중입니다. 비밀 키나 서비스 계정 JSON은 채팅 또는 GitHub에 붙여넣지 않습니다.
+Render API(`https://codyssey-m1-2-api.onrender.com`)와 Vercel 프론트(`https://project-6ablk.vercel.app`)를 배포했습니다. 개인 계정·Firestore·코디세이 AI 설정을 연결했으며, 배포 환경 전체 기능 검증은 아직 완료하지 않았습니다. 비밀 키나 서비스 계정 JSON은 채팅 또는 GitHub에 붙여넣지 않습니다.
 
 ## 1. Firebase
 

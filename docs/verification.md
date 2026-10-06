@@ -1,6 +1,6 @@
 # 검증 기록
 
-기준일: 2026-10-01 (Asia/Seoul). 구현 및 개발 검증 완료, Firebase 서버 연결 검증 완료, 실제 웹 로그인 및 시장 데이터 표시 검증 완료, GPT·배포 검증 대기.
+최종 갱신: 2026-10-06 (Asia/Seoul). 아래의 10월 1일 기록은 당시 결과이며, 이후 실제 연결·배포 확인은 날짜별 추가 기록을 따릅니다.
 
 | 종류 | 근거 | 결과 |
 | --- | --- | --- |
@@ -15,14 +15,16 @@ NAVER EUC-KR XML 파싱 오류를 재현하는 회귀 테스트가 실패한 뒤
 
 Python 3.12.14와 requirements-lock.txt에 기록한 의존성을 사용했습니다. Starlette의 anyio BlockingPortal 관련 upstream deprecation warning 1개가 있습니다.
 
-## 미검증
+## 전체 기능 확인에서 남은 항목
 
 - 실제 OpenAI 답변과 데이터 요약 반영
 - 서버 재시작 후 실제 Firestore 기록 유지
-- Render/Vercel 배포와 실제 도메인 CORS/Swagger 인증
+- 배포 환경의 실제 사용자 로그인 이후 CRUD·AI·대화 복원과 Swagger 인증
 - 실제 서비스의 최종 제출용 스크린샷
 
 환경 파일과 실제 서비스 token이 없어서 verify_integration.py는 missing token으로 not_run을 반환했습니다. 이를 성공 검증에 포함하지 않습니다.
+
+위 not_run은 10월 1일 결과입니다. 10월 6일 실제 검증은 인증을 확인한 뒤 Firestore `429 Quota exceeded` 응답으로 중단했습니다. 해당 시도에서 임시 데이터는 생성되지 않았으며 전체 통합 검증 성공으로 기록하지 않습니다.
 
 screenshots/development는 테스트용 인증·메모리 저장소·대체 AI를 사용해 촬영했고 화면 상단에 그 상태를 표시했습니다. 시장 데이터 242개 수집은 별도의 실제 공개 조회입니다. 개발 화면의 예시 가격·AI 답변은 실제 분석 결과로 사용하지 않습니다.
 
@@ -41,3 +43,9 @@ Admin SDK의 본인 사용자 조회, Firestore 읽기, 실제 TurnStore 트랜�
 ## OpenAI 호환 플랫폼 연결 (2026-10-06)
 
 코디세이 가상 키는 공식 OpenAI 호스트에서 401을 반환했습니다. 발급처를 확인한 뒤 `OPENAI_BASE_URL=https://copa.codyssey.kr/v1`, `OPENAI_API_MODE=chat_completions`, `OPENAI_MODEL=gpt-5.4-mini`로 설정했습니다. 출력 상한 필드는 `OPENAI_CHAT_TOKEN_FIELD`로 선택합니다. 실제 짧은 Chat Completions 호출 1회에서 정상 비어 있지 않은 답변을 확인했습니다. 이 검증은 연결 확인 문구만 보내며 주가 분석·대화 저장까지의 검증은 아닙니다. 실제 SDK와 HTTP 대체 transport를 이용해 호스트/프로토콜/컨텍스트/출력 제한/미완료 응답 및 기존 Responses 계약을 검사했으며 Python 55개와 Node 6개 테스트가 통과했습니다. 로컬 API 서버를 새 설정으로 재시작했습니다.
+
+## 실제 배포 확인 (2026-10-06)
+
+Render 무료 Web Service를 싱가포르 지역에 배포했습니다. 실제 API 주소는 `https://codyssey-m1-2-api.onrender.com`입니다. `/health`와 `/docs`는 200, 비로그인 `/api/me`는 401로 응답했습니다.
+
+Vercel Hobby 프로젝트는 GitHub 저장소에 연결하고 운영 브랜치를 `codex/stock-assistant`로 설정했습니다. 커밋 `8c1967c`의 운영 배포가 Ready 상태이며 `https://project-6ablk.vercel.app`에서 실제 로그인 화면과 Firebase 로그인 준비 상태를 확인했습니다. 프론트에는 API 주소와 Firebase 웹 공개 설정 4개만 저장했습니다. 로그인 화면 캡처는 `screenshots/deployment/login.jpg`이며 로그인 후 필수 기능 증빙을 대신하지 않습니다.
