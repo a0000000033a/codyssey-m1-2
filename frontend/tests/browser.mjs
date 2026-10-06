@@ -24,6 +24,14 @@ try{
   await page.waitForFunction(()=>document.querySelector('#search-results')?.textContent.includes('SK하이닉스'));
   await page.fill('#search-input','삼성');await page.click('#search-form button');
   await page.getByRole('button',{name:'등록',exact:true}).first().click();
+  const stockQueries=[];page.on('request',request=>{if(new URL(request.url()).pathname==='/api/stocks')stockQueries.push(request.url());});
+  await page.fill('#search-input','');await page.press('#search-input','Enter');
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('.search-result').count(),0);
+  assert.equal(await page.locator('#search-more').isVisible(),false);
+  assert.equal(await page.locator('#search-status').textContent(),'');
+  assert.equal(stockQueries.length,0);
+  assert.ok(await page.locator('.watch-select').first().isVisible());
   await page.locator('.watch-select').first().click();
   await page.waitForSelector('.metric');
   await page.click('#tab-records');await page.fill('#record-date','2026-09-01');await page.fill('#record-value','60000');

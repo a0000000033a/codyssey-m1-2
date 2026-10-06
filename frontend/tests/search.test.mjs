@@ -20,3 +20,11 @@ test('rapid input schedules only the latest query',async()=>{
  callback();await Promise.resolve();assert.deepEqual(queries,['삼성']);assert.ok(cleared>=2);
  runner.cancel();
 });
+test('clearing the query cancels pending searches without listing all stocks',async()=>{
+ let callback=null,resolve,signal;const queries=[],results=[];
+ const runner=createSearchRunner({request:(q,m,s)=>{queries.push(q);signal=s;return new Promise(r=>resolve=r);},apply:r=>results.push(r),status:()=>{},error:()=>{},setTimer:fn=>{callback=fn;return 1;},clearTimer:()=>{callback=null;}});
+ const pending=runner.run('삼성');runner.schedule('   ');
+ assert.equal(signal.aborted,true);assert.equal(callback,null);
+ resolve({items:['삼성전자']});await pending;
+ await runner.run('');assert.deepEqual(queries,['삼성']);assert.deepEqual(results,[]);
+});
