@@ -15,7 +15,26 @@
 
 ## 2. OpenAI와 로컬 설정
 
-OpenAI 플랫폼에서 사용할 프로젝트의 API 키를 생성해 `backend/.env`의 `OPENAI_API_KEY`에 넣습니다. 계정에서 사용 가능한 Responses API 모델 ID를 `OPENAI_MODEL`에 넣습니다. 모델은 코드에 고정하지 않습니다. 출력 상한은 기본 800토큰이며, 호출 시간 45초와 자동 재시도 0회를 사용합니다. 프로젝트 사용량과 지출 제한도 직접 설정합니다.
+사용할 플랫폼에서 발급한 키를 `backend/.env`의 `OPENAI_API_KEY`에 넣습니다. 키, API 주소, 호출 방식, 모델을 함께 바꿔야 합니다. OpenAI 공식 키와 다른 플랫폼의 가상 키는 서로 바꿔 사용할 수 없습니다.
+
+공식 OpenAI 설정:
+```dotenv
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_MODE=responses
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+코디세이 플랫폼 설정:
+```dotenv
+OPENAI_BASE_URL=https://copa.codyssey.kr/v1
+OPENAI_API_MODE=chat_completions
+OPENAI_MODEL=gpt-5.4-mini
+OPENAI_CHAT_TOKEN_FIELD=max_completion_tokens
+```
+
+`OPENAI_BASE_URL`에는 `/chat/completions`나 `/responses`를 붙이지 않습니다. 다른 플랫폼도 OpenAI 호환 프로토콜을 지원해야 하며, 지원 모델과 출력 제한 필드를 확인합니다. Chat Completions가 `max_tokens`만 받는 경우 `OPENAI_CHAT_TOKEN_FIELD=max_tokens`로 바꿉니다. `/models` 지원 여부와 채팅 지원 여부는 다를 수 있으므로 모델 조회 실패만으로 키가 잘못됐다고 판단하지 않습니다.
+
+출력 상한은 기본 800토큰, 호출 시간은 45초, 자동 재시도는 0회입니다. Responses는 `store=false`를 사용합니다. 호환 Chat 플랫폼의 데이터 보관 정책은 해당 플랫폼에서 확인해야 합니다. 환경 파일을 바꾼 뒤 API 서버를 재시작합니다.
 
 로컬 환경 파일은 각 `.env.example`을 복사해 생성합니다. `ALLOWED_ORIGINS`는 JSON 배열입니다. 예: `["http://127.0.0.1:5500","http://localhost:5500"]`.
 
@@ -37,7 +56,7 @@ cp frontend/.env.example frontend/.env
 - Health check: `/health`
 - 플랜: free 설정을 제공하며 유료 플랜 전환은 별도로 결정합니다.
 
-환경 변수는 OPENAI_API_KEY, OPENAI_MODEL, FIREBASE_SERVICE_ACCOUNT_JSON, ALLOWED_USER_UID, ALLOWED_ORIGINS입니다. 추가 제한 설정은 `backend/.env.example`을 확인합니다. 키를 등록하지 않아도 health/docs는 열리지만 개인 API는 설정 미완료를 표시합니다.
+환경 변수는 OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_API_MODE, OPENAI_MODEL, OPENAI_CHAT_TOKEN_FIELD, FIREBASE_SERVICE_ACCOUNT_JSON, ALLOWED_USER_UID, ALLOWED_ORIGINS입니다. 추가 제한 설정은 `backend/.env.example`을 확인합니다. 키를 등록하지 않아도 health/docs는 열리지만 개인 API는 설정 미완료를 표시합니다.
 
 배포 후 실제 주소의 `/health`와 `/docs`를 확인합니다. Swagger Authorize에는 로그인한 Firebase ID token을 넣습니다. 화면에서 첫 연결 지연 안내와 재시도를 제공합니다. 콜드스타트 중 채팅 POST를 자동 반복하지 않습니다.
 

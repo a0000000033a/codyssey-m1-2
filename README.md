@@ -64,8 +64,11 @@ backend/.venv/bin/python -m http.server 5500 --directory frontend/dist --bind 12
 
 | 위치 | 변수 | 설명 |
 | --- | --- | --- |
-| 서버 | OPENAI_API_KEY | OpenAI 비밀 키 |
-| 서버 | OPENAI_MODEL | 계정에서 사용 가능한 Responses 모델 ID |
+| 서버 | OPENAI_API_KEY | 선택한 OpenAI 호환 플랫폼의 비밀 키 |
+| 서버 | OPENAI_MODEL | 선택한 플랫폼에서 지원하는 모델 ID |
+| 서버 | OPENAI_BASE_URL | API 기본 주소(`/v1` 포함), 기본 `https://api.openai.com/v1` |
+| 서버 | OPENAI_API_MODE | `responses` 또는 `chat_completions` |
+| 서버 | OPENAI_CHAT_TOKEN_FIELD | Chat 출력 상한 필드: `max_completion_tokens` 또는 `max_tokens` |
 | 서버 | OPENAI_MAX_OUTPUT_TOKENS | 출력 상한, 기본 800 |
 | 서버 | OPENAI_TIMEOUT_SECONDS | 호출 timeout, 기본 45초 |
 | 서버 | CHAT_LOCK_SECONDS | 대화 처리 잠금, 기본 90초 |

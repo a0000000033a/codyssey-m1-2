@@ -43,5 +43,5 @@ def test_cors_does_not_allow_unknown_origin():
 def test_missing_owner_fails_closed():
     from app.core.config import Settings
     from app.main import create_app
-    client = TestClient(create_app(Settings(), token_verifier=lambda _: {"uid": "owner"}))
+    client = TestClient(create_app(Settings(_env_file=None, allowed_user_uid=""), token_verifier=lambda _: {"uid": "owner"}))
     assert client.get("/api/me", headers={"Authorization": "Bearer owner"}).status_code == 503
