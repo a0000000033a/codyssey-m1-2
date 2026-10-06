@@ -2,7 +2,7 @@
 
 국내 관심 종목의 과거 주가·거래량과 내가 남긴 관심 가격·메모를 함께 이해하는 개인용 웹 서비스입니다. 여러 종목을 등록하고 한 종목씩 분석하며, 같은 종목에 여러 대화를 만들 수 있습니다.
 
-현재 상태: 로컬 기능 구현과 자동 검증을 마쳤으며 실제 Firebase 로그인·Firestore 저장·코디세이 AI 연결을 설정했습니다. 개발용 대체 객체는 테스트에서만 사용합니다. Render health·Swagger 응답과 비로그인 접근 차단, Vercel 운영 배포와 실제 로그인 화면 표시를 확인했습니다. 실제 전체 통합 검증은 Firestore의 `429 Quota exceeded` 응답으로 중단했으며, 배포 환경의 전체 기능 검증은 대기 중입니다.
+현재 상태: Render·Vercel 배포 후 실제 Firebase 로그인 세션에서 개인 기록 CRUD, 데이터 기반 AI 답변과 자동 저장, 새로고침 후 기록·대화 복원을 검증했습니다. 2026-10-06 이전 시도의 Firestore 할당량 오류는 이번 검증에서 재발하지 않았습니다. 검증용 기록·대화는 정리했으며 기존 자료는 보존했습니다. 이전에 도구 출력에 노출된 서버 비밀 키의 교체는 아직 필요합니다.
 
 ## 기능과 기술
 
@@ -135,7 +135,13 @@ backend/.venv/bin/python backend/scripts/verify_market.py --symbol 005930
 ![개발 검증: 요약·채팅·복수 대화](docs/screenshots/development/chat.png)
 ![개발 검증: 개인 기록 관리](docs/screenshots/development/records.png)
 
-최종 제출용 요약+질문/답변, CRUD 동작, 대화 복원 스크린샷은 실제 연결·배포 후 추가합니다. 다른 시장과 선택 보너스 기능은 첫 버전 범위에서 제외합니다.
+아래는 실제 배포 서비스의 제출용 화면입니다. 관심 가격과 질문은 검증용으로 작성했으며 캡처 후 해당 임시 기록·대화를 삭제했습니다.
+
+![운영 배포: 데이터 요약과 실제 AI 질문·답변](docs/screenshots/deployment/chat.jpg)
+![운영 배포: 관심 가격 수정 결과](docs/screenshots/deployment/records.jpg)
+![운영 배포: 새로고침 후 대화 불러오기](docs/screenshots/deployment/history.jpg)
+
+ 다른 시장과 선택 보너스 기능은 첫 버전 범위에서 제외합니다.
 
 실제 Vercel 운영 배포의 로그인 화면입니다. 로그인 이후 전체 기능 증빙은 별도로 확인합니다.
 
