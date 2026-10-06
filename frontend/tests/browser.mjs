@@ -17,6 +17,11 @@ try{
   await page.goto('http://127.0.0.1:5500');
   await page.fill('#email','test@example.test');await page.fill('#password','test-password');
   await page.click('#login-button');await page.waitForSelector('#workspace:visible',{timeout:5000});
+  await page.fill('#search-input','삼성');
+  await page.waitForSelector('.search-result',{timeout:5000});
+  assert.ok((await page.locator('#search-results').textContent()).includes('삼성전자'));
+  await page.fill('#search-input','하이닉스');await page.press('#search-input','Enter');
+  await page.waitForFunction(()=>document.querySelector('#search-results')?.textContent.includes('SK하이닉스'));
   await page.fill('#search-input','삼성');await page.click('#search-form button');
   await page.getByRole('button',{name:'등록',exact:true}).first().click();
   await page.locator('.watch-select').first().click();

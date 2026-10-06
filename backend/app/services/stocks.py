@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 from threading import Lock
+from time import monotonic
 from zoneinfo import ZoneInfo
 
 from ..core.errors import ApiError
@@ -19,13 +20,24 @@ class StockService:
     def __init__(self, repo, provider):
         self.repo, self.provider = repo, provider
         self.lock = Lock()
+        self.catalog_lock = Lock()
+        self._catalog = []
+        self._catalog_until = 0
+
+    def _remember_catalog(self, stocks, seconds):
+        self._catalog = [dict(s) for s in stocks]
+        self._catalog_until = monotonic() + seconds
+        return [dict(s) for s in self._catalog]
 
     def catalog(self):
-        with self.lock:
+        with self.catalog_lock:
+            if self._catalog and monotonic() < self._catalog_until:
+                return [dict(s) for s in self._catalog]
             state = self.repo.get("sync_state", "catalog") or {}
             stocks = self.repo.list("stocks")
             if stocks and is_fresh(state.get("last_success_at")):
-                return stocks
+                age = (datetime.now(timezone.utc) - datetime.fromisoformat(state["last_success_at"])).total_seconds()
+                return self._remember_catalog(stocks, max(1, 86400 - age))
             try:
                 stocks = self.provider.list_stocks()
                 self.repo.batch_put("stocks", [(s["symbol"], dict(s, refreshed_at=now())) for s in stocks])
@@ -34,10 +46,10 @@ class StockService:
                     if old["symbol"] not in current:
                         self.repo.delete("stocks", old["id"])
                 self.repo.put("sync_state", "catalog", {"last_success_at": now()})
-                return stocks
+                return self._remember_catalog(stocks, 86400)
             except Exception:
                 if stocks:
-                    return stocks
+                    return self._remember_catalog(stocks, 60)
                 raise ApiError(502, "catalog_unavailable", "종목 목록을 가져오지 못했습니다. 잠시 후 재시도해주세요.") from None
 
     def search(self, q="", cursor=None, limit=30):

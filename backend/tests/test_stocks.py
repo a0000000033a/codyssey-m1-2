@@ -92,3 +92,53 @@ def test_invalid_refresh_retains_quality_reason_and_exclusion_count():
     assert result["error_kind"] == "validation"
     assert result["excluded_count"] == 1
     assert repo.get("market_data", "saved")["close"] == 100
+
+
+def test_repeated_search_and_validation_do_not_reread_catalog():
+    service, repo, _ = stock_service()
+    service.catalog()
+    reads = []
+    original_get, original_list = repo.get, repo.list
+    repo.get = lambda *args: (reads.append(args[0]), original_get(*args))[1]
+    repo.list = lambda *args, **kwargs: (reads.append(args[0]), original_list(*args, **kwargs))[1]
+    for _ in range(50):
+        assert service.search('삼성')['items'][0]['symbol'] == '005930'
+        service.require_stock('000660')
+    assert reads == []
+
+
+def test_warm_search_does_not_wait_for_price_refresh():
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    service, _, provider = stock_service()
+    service.catalog()
+    started, release = Event(), Event()
+    history = provider.history
+    def slow_history(*args):
+        started.set()
+        assert release.wait(3)
+        return history(*args)
+    provider.history = slow_history
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        refresh = pool.submit(service.refresh, '005930')
+        assert started.wait(1)
+        search = pool.submit(service.search, '삼성')
+        try:
+            assert search.result(timeout=.5)['items'][0]['symbol'] == '005930'
+        finally:
+            release.set()
+        refresh.result(timeout=2)
+
+
+def test_expired_catalog_refreshes_and_cached_rows_cannot_be_mutated(monkeypatch):
+    import app.services.stocks as module
+    clock = [0]
+    monkeypatch.setattr(module, 'monotonic', lambda: clock[0])
+    service, repo, provider = stock_service()
+    rows = service.catalog()
+    rows[0]['name'] = 'tampered'
+    assert service.require_stock('005930')['name'] == '삼성전자'
+    clock[0] = 86401
+    repo.put('sync_state', 'catalog', {'last_success_at': (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()})
+    provider.list_stocks = lambda: [{'market': 'KR', 'symbol': '005930', 'name': '갱신된 이름', 'exchange': 'KOSPI'}]
+    assert service.require_stock('005930')['name'] == '갱신된 이름'

@@ -51,3 +51,9 @@ Render 무료 Web Service를 싱가포르 지역에 배포했습니다. 실제 A
 Vercel Hobby 프로젝트는 GitHub 저장소에 연결하고 운영 브랜치를 `codex/stock-assistant`로 설정했습니다. 커밋 `8c1967c`의 운영 배포가 Ready 상태이며 `https://project-6ablk.vercel.app`에서 실제 로그인 화면과 Firebase 로그인 준비 상태를 확인했습니다. 프론트에는 API 주소와 Firebase 웹 공개 설정 4개만 저장했습니다. 로그인 화면 캡처는 `screenshots/deployment/login.jpg`이며 로그인 후 필수 기능 증빙을 대신하지 않습니다.
 
 Render CORS는 운영 origin `https://project-6ablk.vercel.app`의 Authorization 헤더를 포함한 preflight 요청을 200으로 허용합니다. 미등록 `https://example.com` origin은 400이며 허용 origin 헤더가 없습니다. 비밀 키는 운영 환경에서 교체가 필요하며, 사용자 로그인 이후 전체 기능 확인은 별도 진행합니다.
+
+## 검색 개선 검증 (2026-10-06)
+
+캐시를 채운 후 반복 검색·종목 검증이 저장소를 다시 읽지 않는지, 느린 가격 갱신 중에도 검색이 끝나는지, 캐시 만료 후 목록이 갱신되는지 검사했습니다. 캐시 반환값을 수정해도 원본이 오염되지 않는지 확인했습니다. Python 테스트 58개와 Node 테스트 9개가 통과했습니다.
+
+입력 변경 직후 이전 요청의 취소·늦은 결과/오류 무시와 디바운스 처리를 검사했습니다. `browser.mjs`를 실제 실행하여 버튼 없이 자동 검색, Enter 검색, 버튼 검색 및 기존 CRUD·대화 복원·모바일·로그아웃 흐름을 확인했습니다. 브라우저 검증의 인증·Firestore·AI는 테스트 대체 객체이며 실제 개인 계정이나 유료 AI 호출을 사용하지 않았습니다. 정적 빌드와 diff 검사도 통과했습니다. 로컬 비교 측정의 조건과 수치는 `future-improvements.md`에 기록했습니다.
