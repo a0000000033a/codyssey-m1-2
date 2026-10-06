@@ -2,7 +2,7 @@
 
 국내 관심 종목의 과거 주가·거래량과 내가 남긴 관심 가격·메모를 함께 이해하는 개인용 웹 서비스입니다. 여러 종목을 등록하고 한 종목씩 분석하며, 같은 종목에 여러 대화를 만들 수 있습니다.
 
-현재 상태: 로컬 기능 구현·개발 검증 완료, 실제 Firebase/GPT 연결 및 Render/Vercel 배포 검증 대기. 개발 화면의 인증·저장소·AI는 테스트 대체 객체를 사용합니다.
+현재 상태: 로컬 기능 구현과 자동 검증을 마쳤으며 실제 Firebase 로그인·Firestore 저장·코디세이 AI 연결을 설정했습니다. 개발용 대체 객체는 테스트에서만 사용합니다. Render 배포 후 health·Swagger 응답과 비로그인 접근 차단을 확인했습니다. 실제 전체 통합 검증은 Firestore의 `429 Quota exceeded` 응답으로 중단했으며, Vercel 배포와 배포 환경의 전체 기능 검증은 대기 중입니다.
 
 ## 기능과 기술
 
@@ -18,7 +18,7 @@
 | 백엔드 | Python 3.10+, FastAPI, Pydantic, uvicorn |
 | 프론트 | HTML/CSS/JavaScript ES modules, UI 프레임워크 없음 |
 | 저장·인증 | Firebase Firestore, Firebase Authentication, firebase-admin |
-| AI | OpenAI Python SDK, Responses API |
+| AI | OpenAI Python SDK, Responses 또는 OpenAI 호환 Chat Completions API |
 | 시장 데이터 | KRX KIND 상장회사 목록, NAVER 일별 데이터 |
 | 배포 | Render API, Vercel 정적 프론트 |
 
@@ -29,8 +29,8 @@
 | 서비스 | 상태 |
 | --- | --- |
 | Vercel 프론트 | 계정·환경 설정 및 실제 배포 대기 |
-| Render API | 계정·환경 설정 및 실제 배포 대기 |
-| Swagger | 실제 Render 주소의 /docs — 배포 대기 |
+| Render API | https://codyssey-m1-2-api.onrender.com |
+| Swagger | https://codyssey-m1-2-api.onrender.com/docs |
 
 실제 배포·접근 확인 후 주소를 기록합니다. [설정·배포 안내](docs/deployment.md)를 따라 계정과 키를 준비합니다.
 
