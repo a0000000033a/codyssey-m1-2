@@ -32,7 +32,7 @@
 | Render API | https://codyssey-m1-2-api.onrender.com |
 | Swagger | https://codyssey-m1-2-api.onrender.com/docs |
 
-운영 배포 브랜치는 `codex/stock-assistant`입니다. [설정·배포 안내](docs/deployment.md)를 따라 계정과 키를 준비합니다.
+운영 배포 브랜치는 `main`입니다. [설정·배포 안내](docs/deployment.md)를 따라 계정과 키를 준비합니다.
 
 ## 로컬 실행
 

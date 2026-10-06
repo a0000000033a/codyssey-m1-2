@@ -48,7 +48,7 @@ cp frontend/.env.example frontend/.env
 ## 3. Render 백엔드
 
 - 저장소: `a0000000033a/codyssey-m1-2`
-- 배포 전 개발 브랜치: `codex/stock-assistant` (main 통합 후 배포 브랜치와 render.yaml을 main으로 변경)
+- 운영 배포 브랜치: `main` (Render 및 Vercel Production Branch Tracking)
 - Root Directory: `backend`
 - Python: `3.12.14`
 - Build: `pip install -r requirements-lock.txt`
